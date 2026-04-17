@@ -1,0 +1,32 @@
+---
+layout: default
+title: Optimization Paper Digest
+---
+
+# Optimization Paper Digest
+
+面向以下研究方向的每日/每周论文归档与整理：
+
+- **分布式优化**  
+  Query: `all:"distributed optimization" OR all:"decentralized optimization"`
+- **历史信息复用的优化**  
+  Query: `all:"historical information reuse" OR all:"history information reuse" OR all:"memory-based optimization" OR all:"historical gradient" OR all:"variance reduction"`
+- **异步分布式优化**  
+  Query: `all:"asynchronous distributed optimization" OR all:"asynchronous decentralized optimization" OR all:"async distributed optimization"`
+- **大规模优化算法**  
+  Query: `all:"large-scale optimization" OR all:"large scale optimization" OR all:"scalable optimization"`
+
+## Daily Updates
+
+- [2026-04-17](daily/2026-04-17.md)
+
+## Weekly Summaries
+
+- [2026-W16](weekly/2026-W16.md)
+
+## About
+
+- 数据源：arXiv API
+- 更新方式：GitHub Actions 每日自动运行
+- 最近页面生成时间：2026-04-17 09:37 UTC
+- 仓库：GitHub repository + GitHub Pages (/docs source)

@@ -8,13 +8,14 @@ TARGET_DATE="${1:-$(TZ=Asia/Shanghai date +%F)}"
 
 python3 scripts/update_daily_archive.py --date "$TARGET_DATE"
 python3 scripts/update_weekly_summary.py --date "$TARGET_DATE"
+python3 scripts/build_pages_content.py
 
 if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   echo "Not a git repository yet: $REPO_DIR"
   exit 0
 fi
 
-git add daily weekly README.md config/topics.json scripts
+git add daily weekly docs README.md config/topics.json scripts .github
 
 if git diff --cached --quiet; then
   echo "No changes to commit"
