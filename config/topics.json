@@ -1,0 +1,30 @@
+{
+  "timezone": "Asia/Shanghai",
+  "max_results_per_topic": 80,
+  "topics": [
+    {
+      "name": "distributed-optimization",
+      "label": "分布式优化",
+      "query": "all:\"distributed optimization\" OR all:\"decentralized optimization\"",
+      "tags": ["distributed", "optimization"]
+    },
+    {
+      "name": "history-reuse-optimization",
+      "label": "历史信息复用的优化",
+      "query": "all:\"historical information reuse\" OR all:\"history information reuse\" OR all:\"memory-based optimization\" OR all:\"historical gradient\" OR all:\"variance reduction\"",
+      "tags": ["history-reuse", "memory", "variance-reduction"]
+    },
+    {
+      "name": "async-distributed-optimization",
+      "label": "异步分布式优化",
+      "query": "all:\"asynchronous distributed optimization\" OR all:\"asynchronous decentralized optimization\" OR all:\"async distributed optimization\"",
+      "tags": ["asynchronous", "distributed", "optimization"]
+    },
+    {
+      "name": "large-scale-optimization",
+      "label": "大规模优化算法",
+      "query": "all:\"large-scale optimization\" OR all:\"large scale optimization\" OR all:\"scalable optimization\"",
+      "tags": ["large-scale", "optimization"]
+    }
+  ]
+}
