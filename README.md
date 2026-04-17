@@ -1,6 +1,6 @@
-# Research Paper Archive
+# Optimization Paper Digest
 
-一个面向以下研究方向的每日/每周论文归档仓库：
+一个面向以下研究方向的每日/每周论文整理与归档仓库：
 
 - 分布式优化
 - 历史信息复用的优化
