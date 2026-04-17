@@ -7,6 +7,7 @@ cd "$REPO_DIR"
 TARGET_DATE="${1:-$(TZ=Asia/Shanghai date +%F)}"
 
 python3 scripts/update_daily_archive.py --date "$TARGET_DATE"
+python3 scripts/refresh_publication_status.py
 python3 scripts/update_weekly_summary.py --date "$TARGET_DATE"
 python3 scripts/build_pages_content.py
 

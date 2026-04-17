@@ -25,6 +25,7 @@ jobs:
       - name: Run daily archive update
         run: |
           python scripts/update_daily_archive.py
+          python scripts/refresh_publication_status.py
           python scripts/update_weekly_summary.py
           python scripts/build_pages_content.py
 
@@ -32,7 +33,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add daily weekly docs
+          git add daily weekly docs scripts README.md .github
           if git diff --cached --quiet; then
             echo "No changes to commit"
             exit 0

@@ -4,15 +4,11 @@ import datetime as dt
 import json
 import sys
 import textwrap
-import urllib.parse
-import urllib.request
-import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Optional
 from zoneinfo import ZoneInfo
 
-ARXIV_API = "http://export.arxiv.org/api/query"
-ATOM_NS = {"atom": "http://www.w3.org/2005/Atom", "arxiv": "http://arxiv.org/schemas/atom"}
+from arxiv_utils import fetch_feed, parse_feed_entries, arxiv_abs_url
 
 
 def parse_args():
@@ -34,46 +30,6 @@ def resolve_target_date(date_str: Optional[str], tz_name: str) -> dt.date:
     return dt.datetime.now(tz).date()
 
 
-def fetch_arxiv(query: str, max_results: int):
-    params = {
-        "search_query": query,
-        "start": 0,
-        "max_results": max_results,
-        "sortBy": "submittedDate",
-        "sortOrder": "descending",
-    }
-    url = f"{ARXIV_API}?{urllib.parse.urlencode(params)}"
-    req = urllib.request.Request(url, headers={"User-Agent": "research-paper-archive/0.1"})
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        return resp.read()
-
-
-def parse_entry(entry):
-    title = " ".join((entry.findtext("atom:title", default="", namespaces=ATOM_NS) or "").split())
-    summary = " ".join((entry.findtext("atom:summary", default="", namespaces=ATOM_NS) or "").split())
-    paper_id = entry.findtext("atom:id", default="", namespaces=ATOM_NS)
-    published = entry.findtext("atom:published", default="", namespaces=ATOM_NS)
-    updated = entry.findtext("atom:updated", default="", namespaces=ATOM_NS)
-    authors = [author.findtext("atom:name", default="", namespaces=ATOM_NS) for author in entry.findall("atom:author", ATOM_NS)]
-    categories = [node.attrib.get("term", "") for node in entry.findall("atom:category", ATOM_NS)]
-    links = entry.findall("atom:link", ATOM_NS)
-    pdf_link = ""
-    for link in links:
-        if link.attrib.get("title") == "pdf":
-            pdf_link = link.attrib.get("href", "")
-            break
-    return {
-        "id": paper_id,
-        "title": title,
-        "summary": summary,
-        "published": published,
-        "updated": updated,
-        "authors": [a for a in authors if a],
-        "categories": [c for c in categories if c],
-        "pdf_link": pdf_link,
-    }
-
-
 def local_date(iso_str: str, tz_name: str) -> dt.date:
     ts = dt.datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
     return ts.astimezone(ZoneInfo(tz_name)).date()
@@ -83,21 +39,27 @@ def collect_papers(config, target_date: dt.date):
     tz_name = config["timezone"]
     merged = {}
     for topic in config["topics"]:
-        raw = fetch_arxiv(topic["query"], config.get("max_results_per_topic", 50))
-        root = ET.fromstring(raw)
-        for entry in root.findall("atom:entry", ATOM_NS):
-            paper = parse_entry(entry)
-            published_date = local_date(paper["published"], tz_name)
+        raw_feed = fetch_feed(
+            search_query=topic["query"],
+            max_results=config.get("max_results_per_topic", 50),
+            sort_by="submittedDate",
+            sort_order="descending",
+        )
+        for paper in parse_feed_entries(raw_feed):
+            published_date = local_date(str(paper["published"]), tz_name)
             if published_date != target_date:
                 continue
-            if paper["id"] not in merged:
+            paper_key = str(paper.get("arxiv_id") or paper.get("id") or "")
+            if not paper_key:
+                continue
+            if paper_key not in merged:
                 paper["topic_labels"] = []
                 paper["topic_names"] = []
-                merged[paper["id"]] = paper
-            merged[paper["id"]]["topic_labels"].append(topic["label"])
-            merged[paper["id"]]["topic_names"].append(topic["name"])
+                merged[paper_key] = paper
+            merged[paper_key]["topic_labels"].append(topic["label"])
+            merged[paper_key]["topic_names"].append(topic["name"])
     papers = list(merged.values())
-    papers.sort(key=lambda item: (item["published"], item["title"]), reverse=True)
+    papers.sort(key=lambda item: (str(item["published"]), str(item["title"])), reverse=True)
     return papers
 
 
@@ -113,6 +75,7 @@ def render_markdown(config, target_date: dt.date, papers):
         "",
         "- 数据源：arXiv API",
         "- 筛选规则：按关键词检索后，仅保留目标日期新增论文",
+        "- 发表状态补充：每日会重新检查历史 arXiv 元数据中的 DOI / journal_ref",
         "- 注意：这是关键词召回结果，仍建议人工快速过一遍标题与摘要",
         "",
     ]
@@ -128,14 +91,18 @@ def render_markdown(config, target_date: dt.date, papers):
 
     lines.extend(["## 今日论文", ""])
     for idx, paper in enumerate(papers, start=1):
-        abstract = textwrap.shorten(paper["summary"], width=420, placeholder="...")
+        abstract = textwrap.shorten(str(paper["summary"]), width=420, placeholder="...")
+        arxiv_id = str(paper.get("arxiv_id", "") or paper.get("id", ""))
         lines.extend([
             f"### {idx}. {paper['title']}",
-            f"- arXiv: {paper['id']}",
-            f"- Link: {paper['id']}",
+            f"- arXiv: {arxiv_id}",
+            f"- Link: {arxiv_abs_url(arxiv_id)}",
             f"- PDF: {paper['pdf_link'] or 'N/A'}",
             f"- Authors: {', '.join(paper['authors'])}",
             f"- Published: {paper['published']}",
+            f"- Publication Status: {paper['publication_status']}",
+            f"- Publication: {paper['journal_ref'] or 'N/A'}",
+            f"- DOI: {paper['doi'] or 'N/A'}",
             f"- Topics: {', '.join(sorted(set(paper['topic_labels'])))}",
             f"- Categories: {', '.join(sorted(set(paper['categories'])))}",
             f"- Abstract: {abstract}",
