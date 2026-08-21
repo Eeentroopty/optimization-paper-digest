@@ -18,6 +18,7 @@ title: Optimization Paper Digest
 
 ## Daily Updates
 
+- [2026-08-21](daily/2026-08-21.md)
 - [2026-08-20](daily/2026-08-20.md)
 - [2026-08-19](daily/2026-08-19.md)
 - [2026-08-18](daily/2026-08-18.md)
@@ -47,7 +48,6 @@ title: Optimization Paper Digest
 - [2026-07-25](daily/2026-07-25.md)
 - [2026-07-24](daily/2026-07-24.md)
 - [2026-07-23](daily/2026-07-23.md)
-- [2026-07-22](daily/2026-07-22.md)
 
 ## Weekly Summaries
 
@@ -76,5 +76,5 @@ title: Optimization Paper Digest
 - 数据源：arXiv API
 - 更新方式：GitHub Actions 每日自动运行
 - 历史论文会每日刷新 arXiv 上已补充的 DOI / journal_ref
-- 最近页面生成时间：2026-08-20 02:35 UTC
+- 最近页面生成时间：2026-08-21 02:41 UTC
 - 仓库：GitHub repository + GitHub Pages (/docs source)
